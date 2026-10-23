@@ -26,7 +26,7 @@ class Mini:
 
 
 def claim(cid, cpt, em_paid):
-    return Claim(claim_id=cid, provider="P", service_date=date(2024, 1, 1), receipt_date=date(2024, 1, 3), billed_cpt=cpt, paid=em_paid + 10, em_paid=em_paid, dx=())
+    return Claim(claim_id=cid, provider="P", service_date=date(2024, 1, 1), receipt_date=date(2024, 1, 3), billed_cpt=cpt, paid=em_paid + 10, em_paid=em_paid, dx=(), member="M")
 
 
 A = claim("A", "99215", 160.0)      # billed 99215, justified 99213: overbilled; at 99213 it would pay 80 + 10
@@ -44,8 +44,9 @@ def close(a, b, tol=0.02):
 
 
 def test_pay_all_is_zero_up_to_screening_cost():
+    r = sp.score(S, T, [], screened=False)
+    assert r["prevented"] == 0 and r["wrongful_loss"] == 0 and r["abrasion"] == 0 and r["score"] == 0
     r = sp.score(S, T, [])
-    assert r["prevented"] == 0 and r["wrongful_loss"] == 0 and r["abrasion"] == 0
     close(r["staff"], 3 * P["auto_screen"])
     close(r["score"], -0.15)
 

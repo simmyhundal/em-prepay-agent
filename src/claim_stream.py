@@ -35,7 +35,7 @@ def _rows(path):
 
 class Claim:
     """One E/M claim as the payer sees it on receipt."""
-    __slots__ = ("claim_id", "provider", "service_date", "receipt_date", "billed_cpt", "paid", "em_paid", "dx")
+    __slots__ = ("claim_id", "provider", "service_date", "receipt_date", "billed_cpt", "paid", "em_paid", "dx", "member")
 
     def __init__(self, **kw):
         for k in self.__slots__:
@@ -59,7 +59,7 @@ class Stream:
             lag = random.Random(f"{seed}:lag:{cid}").randint(*LAG_DAYS)
             sd = date.fromisoformat(r["service_date"])
             claims.append(Claim(claim_id=cid, provider=r["billing_npi"], service_date=sd, receipt_date=sd + timedelta(days=lag),
-                                billed_cpt=em[cid][0], paid=remit[cid], em_paid=em[cid][1],
+                                billed_cpt=em[cid][0], paid=remit[cid], em_paid=em[cid][1], member=r["member_id"],
                                 dx=tuple(r[f"dx{i}"] for i in range(1, 7) if r[f"dx{i}"])))
         self.claims = sorted(claims, key=lambda c: (c.receipt_date, c.claim_id))
         self.by_id = {c.claim_id: c for c in self.claims}
