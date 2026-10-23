@@ -437,7 +437,50 @@
    "status": "fresh",
    "status_date": "2026-10-23",
    "status_note": "prepay test pool for release P1: seeds 6001 + 41j, j = 0 to 19; never built before the freeze",
-   "uses": []
+   "uses": [
+    {
+     "arm": "WP1.1-test",
+     "role": "test",
+     "date": "2026-10-23",
+     "reference": "docs/ap10.md",
+     "note": "frozen WP1.1, the free workflow side of the true test, run with the agent in step 6 (not run)",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      6001,
+      6042,
+      6083,
+      6124,
+      6165,
+      6206,
+      6247,
+      6288,
+      6329,
+      6370
+     ]
+    },
+    {
+     "arm": "AP1.0",
+     "role": "test",
+     "date": "2026-10-23",
+     "reference": "docs/ap10.md",
+     "note": "the paid agent run, once, on the same seeds (not run; needs approval, a cap and a key)",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      6001,
+      6042,
+      6083,
+      6124,
+      6165,
+      6206,
+      6247,
+      6288,
+      6329,
+      6370
+     ]
+    }
+   ]
   },
   {
    "id": "P-RESERVED",

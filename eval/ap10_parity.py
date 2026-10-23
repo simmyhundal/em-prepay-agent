@@ -27,21 +27,22 @@ def one(seed, rule):
     agent = ap10.scripted_agent(tools)
     flow = wp10.run(stream, office, prior, rule, cap=L.FROZEN["cap"], floor=L.FROZEN["floor"])
     same = {(x.claim_id, x.paid_cpt) for x in agent} == {(x.claim_id, x.paid_cpt) for x in flow}
-    # a real run: a model call on each day with a candidate worth a look; one turn to see the day, then two per pend (pend, read_chart), then done
-    turns = tin = tout = 0
+    # a real run: a model call only on days where the workflow advises a pend; four turns: see the day, pend (one call, all claims), read charts (one call), done
+    turns = tin = tout = days = 0
     for k in range(len(tools.days)):
         day = tools.next_day(k)
-        if not any(c["advice"] == "PEND" or c["workflow_score_dollars"] > -15 for c in day["candidates"]):
-            continue
         n_pend = sum(c["advice"] == "PEND" for c in day["candidates"])
-        t = 2 + n_pend                                          # day turn, one turn for all pends of the round, reads, done
+        if not n_pend:
+            continue
+        days += 1
         base = SYSTEM_TOKENS + TOKENS_PER_CANDIDATE * len(day["candidates"])
-        for j in range(t):
-            tin += base + TOKENS_PER_RESULT * j * max(1, n_pend) // 2 + 100
-            tout += TOKENS_PER_TURN_OUT
-        turns += t
-    return {"seed": seed, "match": same, "agent_pends": len(agent), "workflow_pends": len(flow), "days_with_model_call": sum(1 for k in range(len(tools.days))
-            if any(c["advice"] == "PEND" or c["workflow_score_dollars"] > -15 for c in tools.next_day(k)["candidates"])), "turns": turns, "input_tokens": tin, "output_tokens": tout}
+        grown = 0
+        for j, out_tokens in enumerate((60 + 20 * n_pend, 40 + 20 * n_pend, 30, 20)):
+            tin += base + grown
+            tout += out_tokens
+            grown += 60 + TOKENS_PER_RESULT * n_pend * (j in (1, 2)) + 60 * (j == 0)
+            turns += 1
+    return {"seed": seed, "match": same, "agent_pends": len(agent), "workflow_pends": len(flow), "days_with_model_call": days, "turns": turns, "input_tokens": tin, "output_tokens": tout}
 
 
 if __name__ == "__main__":

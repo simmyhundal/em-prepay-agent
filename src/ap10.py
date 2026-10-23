@@ -1,8 +1,8 @@
 """Agent AP1.0 (prepay point 4, PAID when run with a model): a model chooses tools within caps; the workflow's advice sits inside the tool results.
 
 The agent works one receipt day at a time. `next_day` returns the day's candidate claims (the highest `CANDIDATES` by the workflow's score, with the score and the
-workflow's advice PEND or PAY); `provider_history` gives a clinician's earlier counts; `pend` requests the chart for a claim (within the daily cap); `read_chart` returns the
-office's answer, with the level the rules would pay; `pay` closes a claim as billed; `adjust` pays a pended claim at a given level (or denies it) instead of the rule's level.
+workflow's advice PEND or PAY); `provider_history` gives a clinician's earlier counts; `pend` requests the charts for claims (within the daily cap, one call for all); `read_chart` returns the
+office's answers, with the level the rules would pay; `pay` closes a claim as billed; `adjust` pays a pended claim at a given level (or denies it) instead of the rule's level.
 A claim the agent never touches is paid as billed, as in the workflow. A pended claim the agent does not adjust is resolved by the rules (src/prepay_env.resolve_pend).
 
 Two drivers share the tools: `scripted_agent` follows the advice exactly (used for parity on development seeds, free) and `llm_agent` (a model call per decision turn;
@@ -109,8 +109,8 @@ def scripted_agent(tools):
 
 TOOL_SPECS = [
     {"name": "provider_history", "description": "Earlier claims of the claim's clinician: counts by billed level and earlier claims on the same service date.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}}, "required": ["claim_id"]}},
-    {"name": "pend", "description": "Request the medical record for a claim (costs staff time; a wrongful pend burdens an honest provider). Within the daily cap.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}}, "required": ["claim_id"]}},
-    {"name": "read_chart", "description": "Read the office's answer for a pended claim and the level the rules would pay.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}}, "required": ["claim_id"]}},
+    {"name": "pend", "description": "Request the medical record for one or more claims (costs staff time; a wrongful pend burdens an honest provider). Within the daily cap; pass every claim you want pended in one call.", "input_schema": {"type": "object", "properties": {"claim_ids": {"type": "array", "items": {"type": "string"}}}, "required": ["claim_ids"]}},
+    {"name": "read_chart", "description": "Read the office's answer for pended claims and the level the rules would pay; pass all of them in one call.", "input_schema": {"type": "object", "properties": {"claim_ids": {"type": "array", "items": {"type": "string"}}}, "required": ["claim_ids"]}},
     {"name": "adjust", "description": "Pay a pended claim at a level (99211 to 99215) or 'deny' instead of the rule's level.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}, "level": {"type": "string"}}, "required": ["claim_id", "level"]}},
     {"name": "done", "description": "Finish the day. Claims not pended are paid as billed.", "input_schema": {"type": "object", "properties": {}}},
 ]
@@ -131,8 +131,8 @@ def llm_agent(tools, model="claude-sonnet-5-5", cap_usd=0.0, log_path=None, max_
     spent, log = 0.0, []
     for k in range(len(tools.days) if max_days is None else max_days):
         day = tools.next_day(k)
-        if not any(c["advice"] == "PEND" or c["workflow_score_dollars"] > -15 for c in day["candidates"]):
-            continue                                              # nothing worth a model call: everything pays as billed
+        if not any(c["advice"] == "PEND" for c in day["candidates"]):
+            continue                                              # the workflow would pend nothing today: everything pays as billed, no model call
         msgs = [{"role": "user", "content": json.dumps(day)}]
         pends = 0
         for _ in range(MAX_TOOL_CALLS_PER_DAY):
@@ -152,8 +152,12 @@ def llm_agent(tools, model="claude-sonnet-5-5", cap_usd=0.0, log_path=None, max_
                     finished = True
                     out = {"ok": True}
                 elif u.name == "pend":
-                    out = tools.pend(a["claim_id"], pends)
-                    pends += "error" not in out
+                    out = {}
+                    for cid in a["claim_ids"]:
+                        out[cid] = tools.pend(cid, pends)
+                        pends += "error" not in out[cid]
+                elif u.name == "read_chart":
+                    out = {cid: tools.read_chart(cid) for cid in a["claim_ids"]}
                 else:
                     out = getattr(tools, u.name)(**a)
                 results.append({"type": "tool_result", "tool_use_id": u.id, "content": json.dumps(out)})
