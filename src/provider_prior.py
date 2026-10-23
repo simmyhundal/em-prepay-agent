@@ -50,7 +50,9 @@ class CausalPrior:
         else:
             self.snapshots = self._build(refresh_days, min_claims)
             if cache:
-                pickle.dump(self.snapshots, open(path, "wb"))
+                tmp = f"{path}.{os.getpid()}.tmp"                   # write then rename: a killed run never leaves a half-written cache
+                pickle.dump(self.snapshots, open(tmp, "wb"))
+                os.replace(tmp, path)
         self.dates = sorted(self.snapshots)
 
     def _build(self, refresh_days, min_claims):

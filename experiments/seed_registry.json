@@ -604,10 +604,9 @@
      "arm": "WP1.1-final-dev",
      "role": "confirm",
      "date": "2026-10-23",
-     "reference": "docs/wp11_plan.md",
-     "note": "final development run of the frozen WP1.1",
+     "reference": "docs/wp11_final_dev.md",
+     "note": "frozen WP1.1 read once against the tuned edit",
      "second_use": false,
-     "done": false,
      "seeds": [
       9641,
       9682,
