@@ -248,10 +248,9 @@
      "arm": "WP1.0-final-dev",
      "role": "confirm",
      "date": "2026-10-23",
-     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
-     "note": "final development run of the frozen workflow on j = 50 to 59 (not a test)",
+     "reference": "docs/wp10_final_dev.md",
+     "note": "frozen WP1.0 beside the tuned edit and the hand rule; a final development run, not a test",
      "second_use": false,
-     "done": false,
      "seeds": [
       4051,
       4092,

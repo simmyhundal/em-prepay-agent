@@ -6,7 +6,7 @@ One row per released or frozen version. A version is never edited once used; a c
 
 | Release | Data | Score | Workflow | Agent | Status |
 |---|---|---|---|---|---|
-| P1 | 4.2 (generator pinned in `GENERATOR_PIN`) | P1.0 ([spec](score_prepay.md)) | WP1.0 (issue 5) | AP1.0 (issue 6, paid) | in development; nothing frozen yet |
+| P1 | 4.2 (generator pinned in `GENERATOR_PIN`) | P1.0 ([spec](score_prepay.md)) | WP1.0 ([freeze](wp10_freeze.md), final dev run missed, [result](wp10_final_dev.md)) | AP1.0 (issue 6, paid, not started) | in development; core stories reopen |
 
 Reference arms (not versions): pay-all, claim edits, automatic adjustment, the oracle with triage ([results](prepay_reference_arms.md)).
 

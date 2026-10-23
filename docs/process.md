@@ -42,6 +42,17 @@ Decided 2026-10-23. Subject-matter experts (payment integrity, SIU, health plans
 5. **Say what a number is made of.** A dollar figure names its unit (per seed, summed over ten seeds), its source version, and the assumption that moves it most.
 6. **Enforce it.** Add each new or changed page to `OUTSIDE_PAGES` in `tests/test_concepts.py` and each retired term to its `OLD` list; the test fails if an old term appears outside code or a concept link is missing. The README stays under its length cap.
 
+## Running without stopping (`/run-release paid` or `until-done`)
+
+Added 2026-10-23, after a run ended its turn to wait for background jobs and handed the release back to Simmy. The rule: **a release run ends only when the release is done, the session limit or the spend cap is reached, or an "ask first" item (below) is next. Waiting is never a reason to stop, and neither is a prerequisite that is not ready yet.**
+
+1. **Keep a pin list.** The task list always holds every remaining step of the process, and any item blocked on something (a background run, a build, a PR check, a step that needs an earlier step's output) stays on it as pending with its blocker written in the item ("waiting for H24 to Z: then freeze"). Work the next unblocked item; return to a pinned one when its blocker clears. Write the same list into `docs/decision_log.md` or the release plan page when the session might end, so another session can resume.
+2. **Never end the turn to wait.** Start long free runs in the background, then do other work: docs, tests, concept pages, the agent build, the next hypothesis, the close-out drafts. When nothing independent is left, wait inside the turn with a blocking command (`until <done>; do sleep 20; done` run in the foreground up to the shell's time limit, then again) or a Monitor on the output file. A monitor expiring is not a stopping point: check the output, re-arm, continue.
+3. **Do not call the wrap-up box until the run is finished or blocked on an "ask first" item.** A recap with nothing for Simmy to decide is an interim status, not a stop: send it as ordinary text between tool calls if it is useful, and keep working.
+4. **Order of operations is not a blocker.** If step N+1 needs step N's output, do the parts of N+1 that do not (code, tests, docs, estimates), pin the rest, and resume it when N lands. Registry entries, decision-log rows and issue comments are written as the events happen, not saved for the end.
+5. **Decide, log, move on.** A choice the process lists as autonomous is made by the run, recorded in the decision log with the reason, and Simmy reviews it afterwards. Ask only for the "ask first" items: a paid run beyond the standing approval or the cap, deleting a repository or an unmerged branch, anything Simmy asked to hold.
+6. **If the session limit nears,** stop starting new long runs, commit and push what exists, update the pin list in the decision log with the exact next command for each pinned item, and then end.
+
 ## Who decides what
 
 Decided 2026-10-22 so work can continue when Simmy is busy.

@@ -21,7 +21,7 @@ A seed is a hold-out only for one arm and one decision made before its results w
 
 | Pool | Data | Seeds | Status | Roles by arm | What it can still be used for |
 |---|---|---|---|---|---|
-| P-DEV | 4.2 | 2001 to 4420 step 41 (60) | in use (2026-10-23) | fit: WP1.0 (not run yet); select: REF-edits, REF-auto_provider, WP1.0 (not run yet); confirm: REF-edits-tuned, REF-auto_provider-tuned, WP1.0-final-dev (not run yet) | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
+| P-DEV | 4.2 | 2001 to 4420 step 41 (60) | in use (2026-10-23) | fit: WP1.0 (not run yet); select: REF-edits, REF-auto_provider, WP1.0 (not run yet); confirm: REF-edits-tuned, REF-auto_provider-tuned, WP1.0-final-dev | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 | P-CONFIRM | 4.2 | 2002 to 3601 step 41 (40) | in use (2026-10-23) | confirm: WP1.0, REF-edits-tuned | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 | P-TEST | 4.2 | 6001 to 6780 step 41 (20) | fresh (2026-10-23) | none | One test of a frozen version; nothing else. |
 | P-RESERVED | 4.2 | 7001 to 7780 step 41 (20) | reserved (2026-10-23) | none | Only a final test of a frozen version, once. Never generated, never used for development. |
@@ -37,7 +37,7 @@ A seed is a hold-out only for one arm and one decision made before its results w
 - REF-auto_provider-tuned, confirm, seeds 2821 to 3190 step 41 (2026-10-23; docs/prepay_reference_arms.md): the setting chosen on j = 10 to 19, read once on j = 20 to 29.
 - WP1.0, fit, seeds 3231 to 3600 step 41 (2026-10-23, planned, not run; docs/prepay_plan.md (seed plan, issue 4)): learned pend-or-pay rule fitted on j = 30 to 39 (labels from the office's charts, never the answer key).
 - WP1.0, select, seeds 3641 to 4010 step 41 (2026-10-23, planned, not run; docs/prepay_plan.md (seed plan, issue 4)): hypothesis loop (H1, H2, ...) and every threshold chosen on j = 40 to 49.
-- WP1.0-final-dev, confirm, seeds 4051 to 4420 step 41 (2026-10-23, planned, not run; docs/prepay_plan.md (seed plan, issue 4)): final development run of the frozen workflow on j = 50 to 59 (not a test).
+- WP1.0-final-dev, confirm, seeds 4051 to 4420 step 41 (2026-10-23; docs/wp10_final_dev.md): frozen WP1.0 beside the tuned edit and the hand rule; a final development run, not a test.
 
 **P-CONFIRM** (development). prepay confirm pool: seeds 2002 + 41j, j = 0 to 39; named, not built; read once per declared decision; j = 0 to 19 declared for the WP1.0 confirm (docs/wp10_confirm_declaration.md) and flipped to in_use on 2026-10-23, j = 20 to 39 unread.
 - WP1.0, confirm, seeds 2002 to 2781 step 41 (2026-10-23; docs/wp10_confirm.md): frozen H7 read once against the tuned edit.

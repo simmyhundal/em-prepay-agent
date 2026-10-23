@@ -9,3 +9,5 @@
 | 2026-10-23 | P-CONFIRM flipped fresh to in_use; WP1.0 confirm declared (j = 0 to 19) | docs/wp10_confirm_declaration.md, committed before any confirm seed is built. P-CONFIRM j = 20 to 39, P-TEST, P-RESERVED unread. |
 | 2026-10-23 | WP1.0 confirm read once on P-CONFIRM j = 0 to 19 | +$5,186 a seed over the tuned edit, p = 0.002, 14 of 20 seeds better; ranking flips under staff cost x2 (docs/wp10_confirm.md). Criterion met. |
 | 2026-10-23 | WP1.0 frozen (docs/wp10_freeze.md) | Model fingerprint 0007665628b13588. Final development run next on P-DEV j = 50 to 59. P-TEST untouched. |
+| 2026-10-23 | WP1.0 final development run on P-DEV j = 50 to 59: criterion missed | +$2,063 a seed over the tuned edit, p = 0.093, 7 of 10 better (bar: $3,000, p < 0.05). Pooled with the confirm +$4,145 a seed (not declared). Core stories reopen; no fresh seed spent; P-TEST and P-RESERVED unread. docs/wp10_final_dev.md. |
+| 2026-10-23 | Paid AP1.0 run (issue 6) not started | Waiting for Simmy: WP1.0 missed its final development run, and no estimate or cap has been approved. |
