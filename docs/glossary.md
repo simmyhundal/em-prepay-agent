@@ -2,6 +2,8 @@
 
 [Back to the README](../README.md)
 
+Copied from the postpay repository; prepay terms (pend, prompt-pay deadline, wrongful pend, appeal overturned) are added below as the score is written.
+
 
 
 ## Terms
@@ -25,7 +27,7 @@
 | LLM | "Large language model": the kind of AI that writes the case summaries |
 | Hard negative | An honest provider who looks suspicious at first glance |
 
-**Postpay and prepay.** Postpay (post-payment) review audits claims after they were paid and recovers any overpayment, usually from a sample of records. Prepay (pre-payment) review checks claims before payment and can deny or adjust them. This project is a postpay audit tool; prepay edits and automatic downcoding policies are the alternatives it competes with.
+**Postpay and prepay.** Postpay (post-payment) review audits claims after they were paid and recovers any overpayment, usually from a sample of records. Prepay (pre-payment) review checks claims before payment and can deny or adjust them. This project is the **prepay** one: it pends a claim and requests records before paying. The postpay sibling is [em-upcoding-agent](https://github.com/simmyhundal/em-upcoding-agent). Automatic downcoding (point 6) and claim edits (point 3) are the comparison arms.
 
 ## Words this project uses one way
 | Word | Used for | Not used for |
@@ -48,3 +50,11 @@
 
 ## Abbreviations
 Versions are written short in notes, issues and tables: **S4.0, S4.1** are score versions (score 4.0, score 4.1); **D2.2, D4.0** are data versions (data 2.2, data 4.0); **W2.5, W4.0** are workflow versions and **A3.5, A5.0** agent versions (workflow v4.0, agent v5.0); **H8** is a hypothesis of the workflow's development loop (H8 is workflow v4.0). In the README and release notes the long form stays.
+
+## Prepay terms
+| Term | Meaning |
+|---|---|
+| Pend | Hold a claim unpaid while records are requested |
+| Prompt-pay deadline | The date by which a clean claim must be paid under state law or contract; delay past it is a cost |
+| Wrongful pend | Pending a claim whose billed level the chart supports |
+| Appeal overturned | A provider's appeal of an adjustment or denial that succeeds |

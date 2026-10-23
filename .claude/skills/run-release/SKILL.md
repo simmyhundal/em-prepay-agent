@@ -1,9 +1,9 @@
 ---
 name: run-release
-description: Run the full release process of this project (core stories, setting, hypothesis loop, freeze and final dev run, agent parity, true test with the paid agent run, close-out and reflection). Use when the user types /run-release (optionally with "paid cap=N") or asks to run the full release process.
+description: Run the full release process of this prepay project (core stories, setting, hypothesis loop, freeze and final dev run, agent parity, true test with the paid agent run, close-out and reflection). Use when the user types /run-release (optionally with "paid cap=N") or asks to run the full release process.
 ---
 
-Run one full release cycle of this project by following `docs/process.md` and `CLAUDE.md`, in order. Start by reading both, the open milestones (`gh issue list`), `docs/seeds.md`, `docs/decision_log.md`, the latest `docs/releases/` notes and the latest `docs/reflection_*.md`, then say which step the project is at and what you will do next.
+Run one full release cycle of this project by following `docs/process.md` and `CLAUDE.md`, in order. Start by reading both and `docs/prepay_plan.md` if it exists, the open milestones (`gh issue list`), `experiments/seed_registry.json`, `docs/decision_log.md`, the latest `docs/releases/` notes and the latest `docs/reflection_*.md`, then say which step the project is at and what you will do next.
 
 Arguments:
 - **`paid`** (with an optional `cap=N` in dollars, default 5 for the whole release): Simmy's standing approval to run the paid step (the agent's true test) without asking. Log the estimate in `docs/decision_log.md` before spending, never spend past the cap (stop and say so if the estimate exceeds what is left), keep the per-run caps of the runners, and log the cost afterwards. Without `paid`, stop at the paid run and state the estimate and the cap first.

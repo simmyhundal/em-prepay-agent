@@ -1,19 +1,19 @@
 # The release process
 
-[Back to the README](../README.md) · [decision log](decision_log.md) · [seed roles](seeds.md) · [versions](versioning.md)
+[Back to the README](../README.md) · [decision log](decision_log.md) · [versions](versioning.md)
 
 How a release of this project is run, so it can continue with little input from Simmy. Written 2026-10-22 from the v4.0 to v5.1 cycle. To run the whole cycle in a new session, use the command **`/run-release`** (the skill in `.claude/skills/run-release/SKILL.md` reads this page and CLAUDE.md and follows it).
 
 The command **`/run-release`** takes an argument: `/run-release paid cap=5` grants Simmy's standing approval to run the paid step without stopping, up to $5 for the release (any cap), and to keep going until the release is done or the session limit is reached; without `paid` the run stops at the paid run to ask. See the skill.
 
-A release Y pairs data 4.Y, workflow v4.Y, agent v5.Y and a score version S4.Y that is fixed before the work starts. Short names: S4.x score, D4.x data, W4.x workflow, A5.x agent (see the [glossary](glossary.md)).
+A release Y pairs a data version (from the pinned generator, starting at 4.2), a prepay workflow, a prepay agent and a score version that is fixed before the work starts. Version names and the first release are set in `docs/prepay_plan.md` (to write). Copied from the postpay repository's process on 2026-10-23; wherever it names S4.x, W4.x, A5.x or postpay results, read the prepay equivalents.
 
 ## The steps
 
 **1. Core stories.** File issues in the new release's milestone that fix the shortcomings of the last release, from what its test showed and hypotheses about the causes. Before any work, write down:
-- *The yardsticks.* The last release's workflow on the same new test seeds (free to run), the do-nothing baseline (zero), and the **oracle**: the best conceivable score under the same score version, with the same costs a tuned arm pays, **triage included** (it lists, and so triages, the providers it pursues). Report "score divided by oracle score" with the oracle's definition and seeds (see [ceiling benchmarks](ceiling_benchmarks_w41.md)). The oracle uses the answer key, so it is an upper bound.
-- *The seed plan.* Allocate a development pool, a confirm pool and a **new, unrun test pool**, keep one reserved pool untouched, and record their roles in the [seed registry](seeds.md). Do not reuse a test pool unless it is declared a second look.
-- *The power plan.* Estimate how many seeds a plausible effect needs (paired per-seed differences have a spread of about $800 to $1,300 under S4.0, so 20 to 60 seeds detect only large effects; about 100 seeds are needed for an effect of about $300 per seed) and size the pools for it. A single pre-declared confirmatory test on unused seeds avoids most of the multiple-comparison penalty.
+- *The yardsticks.* The last release's workflow on the same new test seeds (free to run), the do-nothing baseline (zero), and the **oracle**: the best conceivable score under the same score version, with the same costs a tuned arm pays, **triage included** (it lists, and so triages, the providers it pursues). Report "score divided by oracle score" with the oracle's definition and seeds (a ceiling-benchmarks page, as in the postpay repository). The oracle uses the answer key, so it is an upper bound.
+- *The seed plan.* Allocate a development pool, a confirm pool and a **new, unrun test pool**, keep one reserved pool untouched, and record their roles in the seed registry (`experiments/seed_registry.json`). Do not reuse a test pool unless it is declared a second look.
+- *The power plan.* Estimate how many seeds a plausible effect needs (the postpay repository's paired per-seed differences had a spread of about $800 to $1,300, so 20 to 60 seeds detect only large effects and about 100 seeds an effect of about $300 per seed; measure the spread again for prepay) and size the pools for it. A single pre-declared confirmatory test on unused seeds avoids most of the multiple-comparison penalty.
 
 **2. Setting (optional).** Decide the score and data versions for the release before the hypothesis work, when the last release exposed a deficiency in them. Re-score the frozen references (the last workflow and agent) on the new score and data and publish that table first, so the new numbers have something to compare with. Keep the old score and data versions frozen: a new version is a new module. An assumptions track runs beside the loop: each cycle, source at least one unverified parameter (the copy fee, minutes per task, dollars per provider), and the market research track (milestone "Payer stock-price drivers") feeds this step.
 
@@ -21,9 +21,9 @@ A release Y pairs data 4.Y, workflow v4.Y, agent v5.Y and a score version S4.Y t
 - Choose any parameter on the *select* batches; test once on a *confirm* batch declared in advance; never adjust after looking.
 - Count every hypothesis tried and use the Bonferroni bar (0.05 divided by the number tried); report a result below the bar as a result and anything else as a lead.
 - **Run the control for any mechanical gain.** A shorter list, fewer charts or no asks are acceptable ways to raise the score, but the same saving applied to the baseline (for example H8 with a 4-provider list) must be run, so the gain is split into what is mechanical and what is better asking.
-- Write the result of each hypothesis in `docs/w_loop_v4*.md`, comment on the issue, and merge docs and result files.
+- Write the result of each hypothesis in the loop's docs pages, comment on the issue, and merge docs and result files.
 
-**4. Freeze and the final development run.** Write a freeze declaration (`docs/w41_freeze.md` is the template) before the run: what is frozen, the seeds, the arms, the comparisons and the pass criterion ("marked improvement": a stated dollar gain per seed and a p-value). Then run the frozen workflow, **the previous release's workflow arm and the same-list control, all freshly (they are free)**, on the previous release's test seeds. Those seeds were burned by the last release's test, so this is the *final development run*, not a test. If the frozen workflow misses the criterion, reopen the core stories (a reopen costs nothing here because no fresh seed was spent).
+**4. Freeze and the final development run.** Write a freeze declaration (the postpay repository's `docs/w41_freeze.md` is the template) before the run: what is frozen, the seeds, the arms, the comparisons and the pass criterion ("marked improvement": a stated dollar gain per seed and a p-value). Then run the frozen workflow, **the previous release's workflow arm and the same-list control, all freshly (they are free)**, on the previous release's test seeds. Those seeds were burned by the last release's test, so this is the *final development run*, not a test. If the frozen workflow misses the criterion, reopen the core stories (a reopen costs nothing here because no fresh seed was spent).
 
 **5. Agent at parity.** Build the agent arm to mirror the frozen workflow in its tools. Report parity from a scripted agent that follows the advice, on development seeds only (same asks, same calls, same score, as match rates), and a cost estimate for the paid run from the previous agent's recorded usage.
 
