@@ -7,3 +7,6 @@ data/synthetic*/
 .DS_Store
 eval/answer_key/
 external/
+data/pp_*/
+data/t*/
+eval/answer_key/
