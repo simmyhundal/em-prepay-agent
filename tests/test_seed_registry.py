@@ -87,10 +87,12 @@ def test_check_run_raises_on_reserved_fresh_and_test_pools():
     burned = copy.deepcopy(REG)
     next(p for p in burned["pools"] if p["id"] == "P-TEST")["status"] = "burned"
     assert "test pool" in raises(sr.check_run, DATA, [6001], "WP1.0", "select", reg=burned)
-    assert "fresh" in raises(sr.check_run, DATA, [2002], "WP1.0", "select")
-    raises(sr.check_run, DATA, [2002], "WP1.0", "confirm")         # P-CONFIRM is fresh until its declaration flips it to in_use
+    fresh = copy.deepcopy(REG)
+    next(p for p in fresh["pools"] if p["id"] == "P-CONFIRM")["status"] = "fresh"
+    assert "fresh" in raises(sr.check_run, DATA, [2002], "WP1.0", "select", reg=fresh)
+    raises(sr.check_run, DATA, [2002], "WP1.0", "confirm", reg=fresh)    # a fresh pool is only a test until its declaration flips it to in_use
+    sr.check_run(DATA, [2002], "WP1.0", "confirm")                       # flipped on 2026-10-23 for the WP1.0 confirm (docs/wp10_confirm_declaration.md)
     raises(sr.check_development, DATA, [6001])
-    raises(sr.check_development, DATA, [2002])
     sr.check_development(DATA, ref.DEV[:10])
     assert "in no pool" in raises(sr.check_run, DATA, [1], "WP1.0", "select")
     assert "in no pool" in raises(sr.check_run, "4.0", [2001], "WP1.0", "select")   # another data version, another dataset
