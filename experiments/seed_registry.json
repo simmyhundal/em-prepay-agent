@@ -121,6 +121,153 @@
       2329,
       2370
      ]
+    },
+    {
+     "arm": "REF-edits",
+     "role": "select",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "threshold grid for the claim edits, chosen on j = 10 to 19 beside the first-guess read on j = 0 to 9",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2411,
+      2452,
+      2493,
+      2534,
+      2575,
+      2616,
+      2657,
+      2698,
+      2739,
+      2780
+     ]
+    },
+    {
+     "arm": "REF-auto_provider",
+     "role": "select",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "threshold grid for the provider-level adjustment, chosen on j = 10 to 19",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2411,
+      2452,
+      2493,
+      2534,
+      2575,
+      2616,
+      2657,
+      2698,
+      2739,
+      2780
+     ]
+    },
+    {
+     "arm": "REF-edits-tuned",
+     "role": "confirm",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "the tuned claim edits, read once on j = 20 to 29 (a declared hold-out within the development pool)",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2821,
+      2862,
+      2903,
+      2944,
+      2985,
+      3026,
+      3067,
+      3108,
+      3149,
+      3190
+     ]
+    },
+    {
+     "arm": "REF-auto_provider-tuned",
+     "role": "confirm",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "the tuned provider-level adjustment, read once on j = 20 to 29",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2821,
+      2862,
+      2903,
+      2944,
+      2985,
+      3026,
+      3067,
+      3108,
+      3149,
+      3190
+     ]
+    },
+    {
+     "arm": "WP1.0",
+     "role": "fit",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "learned pend-or-pay rule fitted on j = 30 to 39 (labels from the office's charts, never the answer key)",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      3231,
+      3272,
+      3313,
+      3354,
+      3395,
+      3436,
+      3477,
+      3518,
+      3559,
+      3600
+     ]
+    },
+    {
+     "arm": "WP1.0",
+     "role": "select",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "hypothesis loop (H1, H2, ...) and every threshold chosen on j = 40 to 49",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      3641,
+      3682,
+      3723,
+      3764,
+      3805,
+      3846,
+      3887,
+      3928,
+      3969,
+      4010
+     ]
+    },
+    {
+     "arm": "WP1.0-final-dev",
+     "role": "confirm",
+     "date": "2026-10-23",
+     "reference": "docs/prepay_plan.md (seed plan, issue 4)",
+     "note": "final development run of the frozen workflow on j = 50 to 59 (not a test)",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      4051,
+      4092,
+      4133,
+      4174,
+      4215,
+      4256,
+      4297,
+      4338,
+      4379,
+      4420
+     ]
     }
    ]
   },
