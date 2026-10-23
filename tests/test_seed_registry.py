@@ -55,7 +55,7 @@ def test_pools_match_their_formulas_and_the_run_script():
     assert pool("P-TEST")["seeds"] == [6001 + 41 * j for j in range(20)]
     assert pool("P-RESERVED")["seeds"] == [7001 + 41 * j for j in range(20)]
     assert pool("P-RESERVED")["status"] == "reserved" and pool("P-RESERVED")["uses"] == []
-    assert pool("P-TEST")["kind"] == "test" and pool("P-TEST")["uses"] == []
+    assert pool("P-TEST")["kind"] == "test" and all(u.get("done") is False for u in pool("P-TEST")["uses"]), "P-TEST may hold planned uses only until the true test is run"
 
 
 def test_no_arm_fits_or_selects_on_a_seed_it_also_confirms_or_tests_on():
