@@ -25,7 +25,7 @@ A seed is a hold-out only for one arm and one decision made before its results w
 | P-CONFIRM | 4.2 | 2002 to 3601 step 41 (40) | in use (2026-10-23) | confirm: WP1.0, REF-edits-tuned | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 | P-TEST | 4.2 | 6001 to 6780 step 41 (20) | fresh (2026-10-23) | none | One test of a frozen version; nothing else. |
 | P-RESERVED | 4.2 | 7001 to 7780 step 41 (20) | reserved (2026-10-23) | none | Only a final test of a frozen version, once. Never generated, never used for development. |
-| P-DEV2 | 4.2 | 8001 to 10420 step 41 (60) | in use (2026-10-23) | select: WP1.1; confirm: WP1.1-confirm (not run yet), WP1.1-final-dev (not run yet) | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
+| P-DEV2 | 4.2 | 8001 to 10420 step 41 (60) | in use (2026-10-23) | select: WP1.1; confirm: WP1.1-confirm, WP1.1-final-dev (not run yet) | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 
 ## Notes by pool
 
@@ -51,7 +51,7 @@ A seed is a hold-out only for one arm and one decision made before its results w
 
 **P-DEV2** (development). second prepay development pool for the reopened core stories (WP1.1): seeds 8001 + 41j, j = 0 to 59; built as pp_<seed>; select j = 0 to 19, declared confirm j = 20 to 39, final development run j = 40 to 59.
 - WP1.1, select, seeds 8001 to 8780 step 41 (2026-10-23; docs/wp11_loop.md): H11 to H13 scored on j = 0 to 19.
-- WP1.1-confirm, confirm, seeds 8821 to 9600 step 41 (2026-10-23, planned, not run; docs/wp11_plan.md): one declared confirm of the frozen WP1.1 against the tuned edit.
+- WP1.1-confirm, confirm, seeds 8821 to 9600 step 41 (2026-10-23; docs/wp11_confirm.md): frozen WP1.1 read once against the tuned edit.
 - WP1.1-final-dev, confirm, seeds 9641 to 10420 step 41 (2026-10-23, planned, not run; docs/wp11_plan.md): final development run of the frozen WP1.1.
 
 Planned uses (not run yet) are declared before the run; a run turns its planned use into a recorded one with `seed_registry.record_use`.

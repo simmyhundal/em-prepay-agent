@@ -574,10 +574,9 @@
      "arm": "WP1.1-confirm",
      "role": "confirm",
      "date": "2026-10-23",
-     "reference": "docs/wp11_plan.md",
-     "note": "one declared confirm of the frozen WP1.1 against the tuned edit",
+     "reference": "docs/wp11_confirm.md",
+     "note": "frozen WP1.1 read once against the tuned edit",
      "second_use": false,
-     "done": false,
      "seeds": [
       8821,
       8862,

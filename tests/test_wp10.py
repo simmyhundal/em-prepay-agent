@@ -13,7 +13,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 sys.path.insert(0, os.path.join(ROOT, "src"))
 sys.path.insert(0, os.path.join(ROOT, "eval"))
 GEN = os.path.join(ROOT, "external", "em-upcoding-agent", "src", "generate_v2.py")
-ARM_FILES = ("wp10.py", "provider_prior.py", "prepay_env.py", "claim_stream.py")
+ARM_FILES = ("wp10.py", "provider_prior.py", "prepay_env.py", "claim_stream.py", "ap10.py")
 
 
 def test_cost_copies_equal_the_score_parameters():
