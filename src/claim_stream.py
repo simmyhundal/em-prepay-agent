@@ -42,7 +42,7 @@ class Claim:
 
     def __init__(self, **kw):
         for k in self.__slots__:
-            setattr(self, k, kw[k])
+            setattr(self, k, kw[k] if k in kw or k not in ("rendering", "has_test") else None if k == "rendering" else False)
 
 
 class Stream:
