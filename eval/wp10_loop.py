@@ -90,7 +90,66 @@ def controls(seeds=SEL, cap=CAP):
     return res
 
 
+def edits_tuned(seeds):
+    """The tuned claim edit (docs/prepay_reference_arms.md) on the same seeds: the competitor that needs no chart."""
+    import edit_rules
+    import score_prepay as sp
+    out = []
+    for s in seeds:
+        d, key = we.build(s)
+        st = cs.Stream(d, seed=s)
+        out.append(sp.score(st, sp.claim_truth(key, st), edit_rules.run(st, by="rendering", daily_max=20, member_max=6))["score"])
+    return np.array(out)
+
+
+def report(seeds=SEL):
+    """Hypotheses H1 to H8 and the controls on the select seeds. Prints a table and writes experiments/wp10/ledger.json."""
+    F = wp10.FEATURES
+    noprior = [f for f in F if f != "log_prior"]
+    def learned(feats, drop=True, label="proxy_deny", pol="deny", cap=CAP, floor=0.0):
+        r = fit_rule(FIT, label, feats, drop_unresolved=drop)
+        ns = []
+        def ch(t, d):
+            c = pick(t, d, r.predict(t["X"]), cap, floor)
+            ns.append(len(c))
+            return c
+        return run_arm(seeds, ch, pol), sum(ns)
+    rows, arms = {}, {}
+    arms["H1 learned rule, all rows (unresolved valued as honest)"] = learned(F, drop=False)
+    arms["H2 H1 with expired pends paid as billed"] = learned(F, drop=False, label="proxy_pay", pol="pay")
+    arms["H3 H1 without the prior"] = learned(noprior, drop=False)
+    arms["H4 H1 on pile-on features only"] = learned(["n_today_clinician", "n_today_group", "level"], drop=False)
+    arms["H7 train on resolved pends only (WP1.0 candidate)"] = learned(F)
+    arms["H8 H7 without the prior (ablation)"] = learned(noprior)
+    arms["H9 H7 with cap 5"] = learned(F, cap=5)
+    arms["H10 H7 with cap 30"] = learned(F, cap=30)
+    j = wp10.FEATURES.index("n_today_clinician")
+    arms["C1 hand rule: pend when the clinician already has 20 claims that service date"] = (run_arm(seeds, lambda t, d: pick(t, d, t["X"][:, j], CAP, 19.5)), None)
+    best = arms["H7 train on resolved pends only (WP1.0 candidate)"]
+    n = best[1]
+    rng = np.random.RandomState(3)
+    per = max(1, n // len(seeds))
+    arms["C2 random pends, same count as H7 (billed 99214 or 99215)"] = (run_arm(seeds, lambda t, d: rng.choice(np.flatnonzero(t["level"] >= 3), per, replace=False)), None)
+    arms["C3 prior only, top 10 per day among 99214 and 99215"] = (run_arm(seeds, lambda t, d: pick(t, d, t["X"][:, 0], CAP, eligible=t["level"] >= 3)), None)
+    arms["C4 tuned claim edit (denies, no chart)"] = (edits_tuned(seeds), None)
+    arms["C5 oracle at 10 pends a day (answer key)"] = (run_arm(seeds, lambda t, d: pick(t, d, t["true_deny"], CAP, 0.0)), None)
+    arms["C6 screen only (pays everything, charged the screen)"] = (np.full(len(seeds), 0.0) - np.array([SCREEN * len(we.table(s)["day"]) for s in seeds]), None)
+    out = {"seeds": seeds, "rows": []}
+    for k, (v, np_) in arms.items():
+        r = summarize(k, v, best[0], "H7")
+        r["pends"] = np_
+        out["rows"].append(r)
+        print(f"{k:90s} sum {r['sum']:>9} median {r['median']:>7} >0 {r['above_zero']:>2}" + (f"  vs H7 {r.get('diff_sum'):>9} p_t {r.get('p_t'):.3g}" if "diff_sum" in r else ""))
+    out["hypotheses_counted"] = {"changes": 10, "settings_scored_on_select": 59,
+                                 "note": "H1 to H10 are changes; about 59 settings (cap and floor grids, threshold rules, classifier thresholds) were also scored on the select seeds"}
+    os.makedirs(os.path.dirname(LEDGER), exist_ok=True)
+    json.dump(out, open(LEDGER, "w"), indent=1)
+
+
 if __name__ == "__main__":
+    if sys.argv[1] == "report":
+        report()
+        sys.exit()
     if sys.argv[1] == "controls":
         r = controls()
         for k, v in r.items():

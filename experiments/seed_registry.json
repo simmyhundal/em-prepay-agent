@@ -313,10 +313,73 @@
     3601
    ],
    "kind": "development",
-   "status": "fresh",
+   "status": "in_use",
    "status_date": "2026-10-23",
-   "status_note": "prepay confirm pool: seeds 2002 + 41j, j = 0 to 39; named, not built; read once per declared decision",
-   "uses": []
+   "status_note": "prepay confirm pool: seeds 2002 + 41j, j = 0 to 39; named, not built; read once per declared decision; j = 0 to 19 declared for the WP1.0 confirm (docs/wp10_confirm_declaration.md) and flipped to in_use on 2026-10-23, j = 20 to 39 unread",
+   "uses": [
+    {
+     "arm": "WP1.0",
+     "role": "confirm",
+     "date": "2026-10-23",
+     "reference": "docs/wp10_confirm_declaration.md",
+     "note": "the frozen H7 workflow, read once against the tuned edit",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2002,
+      2043,
+      2084,
+      2125,
+      2166,
+      2207,
+      2248,
+      2289,
+      2330,
+      2371,
+      2412,
+      2453,
+      2494,
+      2535,
+      2576,
+      2617,
+      2658,
+      2699,
+      2740,
+      2781
+     ]
+    },
+    {
+     "arm": "REF-edits-tuned",
+     "role": "confirm",
+     "date": "2026-10-23",
+     "reference": "docs/wp10_confirm_declaration.md",
+     "note": "the tuned claim edit as the comparison arm",
+     "second_use": false,
+     "done": false,
+     "seeds": [
+      2002,
+      2043,
+      2084,
+      2125,
+      2166,
+      2207,
+      2248,
+      2289,
+      2330,
+      2371,
+      2412,
+      2453,
+      2494,
+      2535,
+      2576,
+      2617,
+      2658,
+      2699,
+      2740,
+      2781
+     ]
+    }
+   ]
   },
   {
    "id": "P-TEST",
