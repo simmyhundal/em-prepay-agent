@@ -86,16 +86,24 @@ def claim_features(stream, prior):
     return X
 
 
+def is_resolved(response):
+    """The pend returned something a coder can read: a chart inside the wait limit, or NO_RECORD. Anything else (no answer, a deficient chart never fixed) says nothing about the visit."""
+    return bool(response.no_record or (response.chart_cpt is not None and response.day is not None and response.day <= WAIT_LIMIT))
+
+
 def training_labels(stream, office, expired_policy="deny"):
-    """The value of pending each claim, from the office's answers only: array in stream order. The office is deterministic per claim, so this is what a payer
-    that had pended every claim in a past period would have seen."""
+    """(value, resolved): the value of pending each claim from the office's answers only, in stream order, and whether the pend was resolved. The office is deterministic per
+    claim, so this is what a payer that had pended every claim in a past period would have seen. Training uses resolved rows only: for an unresolved pend the payer learns
+    nothing about the visit, and valuing it as honest (or as upcoded) teaches the rule the valuer's assumption rather than the claim (hypothesis H7, docs/wp10_loop.md)."""
     v = np.zeros(len(stream.claims))
+    ok = np.zeros(len(stream.claims), dtype=bool)
     for i, c in enumerate(stream.claims):
         r = office.request(c)
         d = resolve_response(stream, c, r, expired_policy=expired_policy)
         payable_hat, over_hat = proxy_payable(stream, c, r)
         v[i] = pend_value(stream, c, d, payable_hat, over_hat)
-    return v
+        ok[i] = is_resolved(r)
+    return v, ok
 
 
 def days_index(stream):
@@ -137,3 +145,21 @@ class Rule:
 
     def predict(self, X):
         return self.model.predict(X[:, self.cols])
+
+
+def train(parts, features=FEATURES, expired_policy="deny", **kw):
+    """Fit the rule on past periods: `parts` is a list of (stream, office, prior). Resolved pends only."""
+    Xs, vs = [], []
+    for stream, office, prior in parts:
+        X = claim_features(stream, prior)
+        v, ok = training_labels(stream, office, expired_policy)
+        Xs.append(X[ok])
+        vs.append(v[ok])
+    return Rule(features, **kw).fit(np.vstack(Xs), np.concatenate(vs))
+
+
+def run(stream, office, prior, rule, cap=CAP_PER_DAY, floor=0.0, expired_policy="deny"):
+    """WP1.0 end to end on one stream: the Decisions for the claims it pends (every other claim is paid as billed)."""
+    X = claim_features(stream, prior)
+    chosen = pick(stream, rule.predict(X), cap, floor)
+    return decisions(stream, office, chosen, expired_policy)

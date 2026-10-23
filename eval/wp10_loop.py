@@ -47,9 +47,15 @@ def load(seeds):
     return {s: (we.table(s), None) for s in seeds}
 
 
-def fit_rule(seeds, label="proxy_deny", features=wp10.FEATURES, **kw):
-    X = np.vstack([we.table(s)["X"] for s in seeds])
-    v = np.concatenate([we.table(s)[label] for s in seeds])
+def resolved(tab):
+    return (tab["resp_norecord"] == 1) | ((tab["resp_chart"] >= 0) & (tab["resp_day"] >= 0) & (tab["resp_day"] <= wp10.WAIT_LIMIT))
+
+
+def fit_rule(seeds, label="proxy_deny", features=wp10.FEATURES, drop_unresolved=True, **kw):
+    ts = [we.table(s) for s in seeds]
+    k = [resolved(t) if drop_unresolved else np.ones(len(t["day"]), bool) for t in ts]
+    X = np.vstack([t["X"][m] for t, m in zip(ts, k)])
+    v = np.concatenate([t[label][m] for t, m in zip(ts, k)])
     return wp10.Rule(features, **kw).fit(X, v)
 
 

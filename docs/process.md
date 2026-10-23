@@ -37,7 +37,7 @@ Decided 2026-10-23. Subject-matter experts (payment integrity, SIU, health plans
 
 1. **Open with what the page is.** One paragraph a newcomer can follow: what question the page answers and what it assumes. Put version tags and issue numbers after the plain description, not in the heading.
 2. **Use the industry term when there is one** (workflow versus agent, triage, extrapolation, lower confidence limit) and define it at first use. Invent a project term only when no industry term fits, and give it a plain name that says what it does ("break-even rule", not "demand floor").
-3. **One concept, one page.** Every project term gets a short page in [concepts/](concepts/README.md) with *what it means, why it exists, an example, where to find it*, and a row in the glossary's Project terms table that also lists the old or code name.
+3. **One concept, one page.** Every project term gets a short page in `docs/concepts/` (to create) with *what it means, why it exists, an example, where to find it*, and a row in the glossary's Project terms table that also lists the old or code name.
 4. **Link at first use** to the concept page with a hover title (`[term](concepts/x.md "one-line meaning")`; GitHub shows link titles on hover). Code names (`hybrid_review`, `near_miss`) stay in code spans and are never the only name for an idea.
 5. **Say what a number is made of.** A dollar figure names its unit (per seed, summed over ten seeds), its source version, and the assumption that moves it most.
 6. **Enforce it.** Add each new or changed page to `OUTSIDE_PAGES` in `tests/test_concepts.py` and each retired term to its `OLD` list; the test fails if an old term appears outside code or a concept link is missing. The README stays under its length cap.
