@@ -23,7 +23,7 @@ A seed is a hold-out only for one arm and one decision made before its results w
 |---|---|---|---|---|---|
 | P-DEV | 4.2 | 2001 to 4420 step 41 (60) | in use (2026-10-23) | fit: WP1.0 (not run yet), WP1.1; select: REF-edits, REF-auto_provider, WP1.0 (not run yet); confirm: REF-edits-tuned, REF-auto_provider-tuned, WP1.0-final-dev | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 | P-CONFIRM | 4.2 | 2002 to 3601 step 41 (40) | in use (2026-10-23) | confirm: WP1.0, REF-edits-tuned | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
-| P-TEST | 4.2 | 6001 to 6780 step 41 (20) | fresh (2026-10-23) | none | One test of a frozen version; nothing else. |
+| P-TEST | 4.2 | 6001 to 6780 step 41 (20) | fresh (2026-10-23) | test: WP1.1-test (not run yet), AP1.0 (not run yet) | One test of a frozen version; nothing else. |
 | P-RESERVED | 4.2 | 7001 to 7780 step 41 (20) | reserved (2026-10-23) | none | Only a final test of a frozen version, once. Never generated, never used for development. |
 | P-DEV2 | 4.2 | 8001 to 10420 step 41 (60) | in use (2026-10-23) | select: WP1.1; confirm: WP1.1-confirm, WP1.1-final-dev | A confirm for a hypothesis whose design did not see its results; development data for the rest. |
 
@@ -46,6 +46,8 @@ A seed is a hold-out only for one arm and one decision made before its results w
 - REF-edits-tuned, confirm, seeds 2002 to 2781 step 41 (2026-10-23; docs/wp10_confirm.md): comparison arm for the WP1.0 confirm.
 
 **P-TEST** (test). prepay test pool for release P1: seeds 6001 + 41j, j = 0 to 19; never built before the freeze.
+- WP1.1-test, test, seeds 6001 to 6370 step 41 (2026-10-23, planned, not run; docs/ap10.md): frozen WP1.1, the free workflow side of the true test, run with the agent in step 6 (not run).
+- AP1.0, test, seeds 6001 to 6370 step 41 (2026-10-23, planned, not run; docs/ap10.md): the paid agent run, once, on the same seeds (not run; needs approval, a cap and a key).
 
 **P-RESERVED** (test). prepay reserved pool: seeds 7001 + 41j, j = 0 to 19; never generated; for the next release's test.
 
