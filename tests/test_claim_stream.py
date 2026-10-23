@@ -43,6 +43,10 @@ def main():
         for x in cut.claims:
             cut._by_provider.setdefault(x.provider, []).append(x)
         assert cut.provider_counts(c) == before
+        # billing NPIs are groups, rendering NPIs are clinicians; the rendering history is causal too
+        assert len({x.provider for x in s}) < len({x.rendering for x in s if x.rendering}) and any(x.has_test for x in s)
+        for x in s.claims[::700]:
+            assert all((h.receipt_date, h.claim_id) < (x.receipt_date, x.claim_id) and h.rendering == x.rendering for h in s.rendering_history(x))
         # the office: deterministic, unrendered claims never produce a chart, rendered ones sometimes do
         o1, o2 = cs.ClaimOffice(d, seed=1), cs.ClaimOffice(d, seed=1)
         got, none, unr = 0, 0, 0

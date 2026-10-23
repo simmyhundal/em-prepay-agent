@@ -16,16 +16,17 @@ def run_all(stream):
     return [Decision(c.claim_id, "adjust", _down(c.billed_cpt), 0, 0, 0) for c in stream if c.billed_cpt in HIGH]
 
 
-def run_provider(stream, delta=0.2, min_n=20):
+def run_provider(stream, delta=0.2, min_n=20, by="provider"):
     tot = hi = 0
     pt, ph = {}, {}
     out = []
     for c in stream:
-        n, h = pt.get(c.provider, 0), ph.get(c.provider, 0)
+        who = c.provider if by == "provider" else c.rendering     # billing group (the default) or rendering clinician
+        n, h = pt.get(who, 0), ph.get(who, 0)
         if c.billed_cpt in HIGH and n >= min_n and tot >= 200 and h / n > hi / tot + delta:
             out.append(Decision(c.claim_id, "adjust", _down(c.billed_cpt), 0, 0, 0))
-        pt[c.provider] = n + 1
-        ph[c.provider] = h + (c.billed_cpt in HIGH)
+        pt[who] = n + 1
+        ph[who] = h + (c.billed_cpt in HIGH)
         tot += 1
         hi += c.billed_cpt in HIGH
     return out

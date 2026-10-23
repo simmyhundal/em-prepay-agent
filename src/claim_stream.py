@@ -15,6 +15,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 EM_CODES = ("99211", "99212", "99213", "99214", "99215")
+TEST_CODES = ("80053", "85025")   # the lab lines the postpay detector view calls a test line
 LAG_DAYS = (1, 14)            # receipt date = service date + a seeded lag; assumption (data 4.2 has service dates only)
 HERE = os.path.dirname(os.path.abspath(__file__))
 GEN_SRC = os.path.join(HERE, "..", "external", "em-upcoding-agent", "src")
@@ -35,21 +36,26 @@ def _rows(path):
 
 class Claim:
     """One E/M claim as the payer sees it on receipt."""
-    __slots__ = ("claim_id", "provider", "service_date", "receipt_date", "billed_cpt", "paid", "em_paid", "dx", "member")
+    __slots__ = ("claim_id", "provider", "service_date", "receipt_date", "billed_cpt", "paid", "em_paid", "dx", "member", "rendering", "has_test")
+    # `provider` is the BILLING NPI, a group (74 in a data 4.2 dataset); `rendering` is the clinician (about 217), the unit the postpay screen scores,
+    # or None when the claim cannot be attributed to a clinician (blank rendering NPI under an organizational billing NPI, as derive.accepted_visits does).
 
     def __init__(self, **kw):
         for k in self.__slots__:
-            setattr(self, k, kw[k])
+            setattr(self, k, kw[k] if k in kw or k not in ("rendering", "has_test") else None if k == "rendering" else False)
 
 
 class Stream:
     def __init__(self, data_dir, seed=1):
         self.data_dir, self.seed = data_dir, seed
         remit = {r["claim_id"]: float(r["paid_amount"]) for r in _rows(os.path.join(data_dir, "remittance.csv"))}
-        em = {}
+        em, tests = {}, set()
         for r in _rows(os.path.join(data_dir, "claim_lines.csv")):
             if r["cpt"] in EM_CODES:
                 em[r["claim_id"]] = (r["cpt"], float(r["paid_amount"]))
+            elif r["cpt"] in TEST_CODES:
+                tests.add(r["claim_id"])
+        npis = {r["npi"] for r in _rows(os.path.join(data_dir, "providers.csv"))}
         self.fee = {r["cpt"]: float(r["allowed_amount"]) for r in _rows(os.path.join(data_dir, "reference", "fee_schedule.csv")) if r["cpt"] in EM_CODES}
         claims = []
         for r in _rows(os.path.join(data_dir, "claims_header.csv")):
@@ -60,12 +66,16 @@ class Stream:
             sd = date.fromisoformat(r["service_date"])
             claims.append(Claim(claim_id=cid, provider=r["billing_npi"], service_date=sd, receipt_date=sd + timedelta(days=lag),
                                 billed_cpt=em[cid][0], paid=remit[cid], em_paid=em[cid][1], member=r["member_id"],
+                                rendering=r["rendering_npi"] or (r["billing_npi"] if r["billing_npi"] in npis else None), has_test=cid in tests,
                                 dx=tuple(r[f"dx{i}"] for i in range(1, 7) if r[f"dx{i}"])))
         self.claims = sorted(claims, key=lambda c: (c.receipt_date, c.claim_id))
         self.by_id = {c.claim_id: c for c in self.claims}
         self._by_provider = defaultdict(list)
+        self._by_rendering = defaultdict(list)
         for c in self.claims:
             self._by_provider[c.provider].append(c)
+            if c.rendering is not None:
+                self._by_rendering[c.rendering].append(c)
 
     def __iter__(self):
         return iter(self.claims)
@@ -74,6 +84,13 @@ class Stream:
         """Claims of the same provider received strictly before this one (causal: never a later row)."""
         key = (claim.receipt_date, claim.claim_id)
         return [h for h in self._by_provider[claim.provider] if (h.receipt_date, h.claim_id) < key]
+
+    def rendering_history(self, claim):
+        """Claims of the same rendering clinician received strictly before this one (causal). Empty when the claim has no clinician."""
+        if claim.rendering is None:
+            return []
+        key = (claim.receipt_date, claim.claim_id)
+        return [h for h in self._by_rendering[claim.rendering] if (h.receipt_date, h.claim_id) < key]
 
     def provider_counts(self, claim):
         """Counts of billed E/M codes in the provider's history before this claim, as the screen's raw input."""
