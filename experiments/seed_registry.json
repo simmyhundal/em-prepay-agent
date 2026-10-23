@@ -1,0 +1,15 @@
+{
+ "format": 1,
+ "vocabulary": {
+  "fit": "parameters of a model are estimated on the seeds",
+  "select": "a setting or a design choice is made on the seeds",
+  "confirm": "a hold-out read once for a decision declared in advance",
+  "test": "a fresh seed set read once for a frozen version",
+  "burned": "results were read before a later decision was made; the seeds are development data for everything after",
+  "fresh": "never run by anyone",
+  "reserved": "held back and never generated; changing this needs a deliberate edit of the registry",
+  "in_use": "read for declared decisions and still clean for hypotheses whose design did not see those results"
+ },
+ "arm_aliases": {},
+ "pools": []
+}
