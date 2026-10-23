@@ -1,4 +1,4 @@
-"""The seed registry (issue 176): which seeds were fitted, selected, confirmed or tested on, per arm and per data version.
+"""The seed registry (copied from the postpay repository, issue 176 there): which seeds were fitted, selected, confirmed or tested on, per arm and per data version.
 
 The registry is `experiments/seed_registry.json`; `docs/seeds.md` is generated from it (`eval/seed_registry_report.py`).
 A seed number alone means nothing: data 4.0 seed 1515 and data 2.2 seed 1515 are different datasets, so every lookup is by (data version, seed).
@@ -31,8 +31,8 @@ def canonical(reg, arm):
 
 
 def line(arm):
-    """'agent' for A3.x/A5.x and v3.x, else 'workflow' (workflow versions, loop hypotheses H*, controls)."""
-    return "agent" if re.match(r"^(A\d|v3\.)", arm) else "workflow"
+    """'agent' for A3.x, A5.x, AP1.x and v3.x else 'workflow' (workflow versions, loop hypotheses H*, controls)."""
+    return "agent" if re.match(r"^(A\d|AP\d|v3\.)", arm) else "workflow"
 
 
 def pool_seeds(pool):
@@ -116,6 +116,38 @@ def check_run(data, seeds, arm, role, second_use=False, reg=None):
             prior = [u for u in pool["uses"] if u["role"] == "test" and u.get("done", True) and not u.get("second_use") and line(canonical(reg, u["arm"])) == line(arm)]
             if prior and not second_use:
                 raise SeedRegistryError(f"pool {pid} already had a first test by the {line(arm)} line ({', '.join(u['arm'] for u in prior)}); {arm} on it is a second use: pass second_use=True and record it in the registry")
+
+
+def record_use(data, pool_id, arm, role, seeds, reference, note, date, second_use=False, path=None):
+    """Record that `arm` ran in `role` on `seeds` of pool `pool_id`. A planned use of the same arm and role (done = false) becomes done; otherwise a use is added.
+    Call it in the same commit as the run, then regenerate docs/seeds.md (python eval/seed_registry_report.py --write)."""
+    reg = load(path)
+    pool = next(p for p in reg["pools"] if p["id"] == pool_id and str(p["data_version"]) == str(data))
+    seeds = [int(s) for s in seeds]
+    planned = [u for u in pool["uses"] if u["arm"] == arm and u["role"] == role and u.get("done") is False]
+    use = planned[0] if planned else {"arm": arm, "role": role}
+    use.update({"date": date, "reference": reference, "note": note, "second_use": bool(second_use)})
+    use.pop("done", None)
+    if set(seeds) != set(pool["seeds"]):
+        use["seeds"] = seeds
+    if not planned:
+        pool["uses"].append(use)
+    with open(path or PATH, "w") as f:
+        json.dump(reg, f, indent=1)
+    return use
+
+
+def plan_use(data, pool_id, arm, role, seeds, reference, note, date, path=None):
+    """Declare a use before the run (done = false). It does not block check_run; it makes the plan visible in docs/seeds.md."""
+    reg = load(path)
+    pool = next(p for p in reg["pools"] if p["id"] == pool_id and str(p["data_version"]) == str(data))
+    use = {"arm": arm, "role": role, "date": date, "reference": reference, "note": note, "second_use": False, "done": False}
+    if set(int(s) for s in seeds) != set(pool["seeds"]):
+        use["seeds"] = [int(s) for s in seeds]
+    pool["uses"].append(use)
+    with open(path or PATH, "w") as f:
+        json.dump(reg, f, indent=1)
+    return use
 
 
 def ranges(seeds):

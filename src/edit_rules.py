@@ -1,5 +1,5 @@
 """Prepay point 3: claim edits at adjudication. Rules on the claim and the provider's history before it; no chart is requested.
-A claim that trips an edit is denied; the provider can appeal (the score charges that). Thresholds were chosen on development seeds (docs/prepay_reference_arms.md)."""
+A claim that trips an edit is denied; the provider can appeal (the score charges that). The defaults are first guesses, not tuned; tuned values are chosen on development seeds and reported in docs/prepay_reference_arms.md."""
 from collections import defaultdict
 from datetime import timedelta
 
