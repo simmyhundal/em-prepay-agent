@@ -58,3 +58,20 @@ Versions are written short in notes, issues and tables: **S4.0, S4.1** are score
 | Prompt-pay deadline | The date by which a clean claim must be paid under state law or contract; delay past it is a cost |
 | Wrongful pend | Pending a claim whose billed level the chart supports |
 | Appeal overturned | A provider's appeal of an adjustment or denial that succeeds |
+
+## Project terms
+One row per term with a concept page. The last column lists an older or code name where there is one.
+
+| Term | Meaning | Old or code name |
+|---|---|---|
+| [Pend](concepts/pend.md "Holding a claim unpaid while the payer asks the provider for the medical record (the chart)") | Holding a claim unpaid while the payer asks the provider for the medical record (the chart). | |
+| [Prompt-pay deadline](concepts/prompt-pay-deadline.md "The date by which a clean claim must be paid under state law or contract; paying later costs interest") | The date by which a clean claim must be paid under state law or contract; paying later costs interest. | |
+| [Abrasion](concepts/abrasion.md "The cost a review puts on an honest provider: a wrongful pend, a wrongful adjustment or denial, and late payment") | The cost a review puts on an honest provider: a wrongful pend, a wrongful adjustment or denial, and late payment. | |
+| [Wrongful pend](concepts/wrongful-pend.md "Pending a claim whose billed level the chart supports (or that was underbilled)") | Pending a claim whose billed level the chart supports (or that was underbilled). | |
+| [Oracle](concepts/oracle.md "The best conceivable strategy under the same score and costs, built by reading the answer key; an upper bound, not a competitor") | The best conceivable strategy under the same score and costs, built by reading the answer key; an upper bound, not a competitor. | |
+| [Claim edit](concepts/claim-edit.md "A rule applied to the claim (and the provider's earlier claims) at adjudication, with no records request, that denies or flags claims that trip it") | A rule applied to the claim (and the provider's earlier claims) at adjudication, with no records request, that denies or flags claims that trip it. | |
+| [Provider prior](concepts/provider-prior.md "A provider-level suspicion score, here the shrunk ratio of high-level visits to what the patients predict (screen eb_upper_t), refreshed as claims arrive") | A provider-level suspicion score, here the shrunk ratio of high-level visits to what the patients predict (screen eb_upper_t), refreshed as claims arrive. | |
+| [Daily pend cap](concepts/daily-pend-cap.md "The most claims a strategy may pend on one receipt day, standing in for review staff capacity") | The most claims a strategy may pend on one receipt day, standing in for review staff capacity. | |
+| [Resolved pend](concepts/resolved-pend.md "A pend that returned something a coder can read: a chart inside the wait limit, or a statement that no record exists") | A pend that returned something a coder can read: a chart inside the wait limit, or a statement that no record exists. | |
+| [Final development run](concepts/final-development-run.md "A last free run of a frozen strategy on development seeds no hypothesis has read, to catch a result that depended on the seeds used to choose and confirm it") | A last free run of a frozen strategy on development seeds no hypothesis has read, to catch a result that depended on the seeds used to choose and confirm it. | |
+| [Workflow and agent](concepts/workflow-and-agent.md "Two designs of the same system: in a workflow, code fixes the order of steps; in an agent, a language model chooses the steps within caps") | Two designs of the same system: in a workflow, code fixes the order of steps; in an agent, a language model chooses the steps within caps. | |
