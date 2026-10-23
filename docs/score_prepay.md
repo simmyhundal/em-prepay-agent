@@ -30,7 +30,7 @@ Per arriving claim the arm chooses **pay** (as billed), **pend** (request the ch
 | Parameter | Value | Source / status |
 |---|---|---|
 | Pay-or-pend decision time | on receipt; staff capacity of `PEND_CAP_PER_DAY` pends | **assumption** (a daily cap stands for review staff; swept) |
-| Prompt-pay deadline | 30 days from receipt | **assumption**; state and contract clocks vary (to source, issue 9) |
+| Prompt-pay deadline | 30 days from receipt | **assumption**; state and contract clocks vary (to source, issue 7) |
 | Wait limit for records | 45 days | **assumption**, borrowed from Medicare ADR's 45 days |
 | `EXPIRED_POLICY` | deny | **assumption**; in practice requested claims are denied or recouped when records do not arrive (postpay issue 68). Non-response is not evidence of upcoding |
 | Read accuracy | chart rules read the supported level from the generated chart as the postpay rules do; the rate of a wrong read is measured on development seeds and reported, not assumed zero | measured |
