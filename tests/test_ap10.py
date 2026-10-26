@@ -56,6 +56,34 @@ def main():
         assert "ok" in t2.pend(cid, 0) and "error" in t2.pend(cid, 0)
         assert "error" in t2.pend(day["candidates"][1]["claim_id"], 2), "daily cap not enforced"
         assert "ok" in t2.adjust(cid, "99213")
+        # the model driver with a fake client: follows or overrides the advice, falls back to the advice on a reply with no tool call, and stops spending at the cap
+        class Use:
+            def __init__(self, ids): self.type, self.name, self.input = "tool_use", "pend", {"claim_ids": ids}
+        class Resp:
+            def __init__(self, content): self.content, self.usage = content, type("U", (), {"input_tokens": 1_000_000, "output_tokens": 0})()
+        class Fake:
+            def __init__(self, mode): self.mode, self.calls = mode, 0
+            @property
+            def messages(self): return self
+            def create(self, **kw):
+                self.calls += 1
+                if self.mode == "none":
+                    return Resp([])
+                if self.mode == "empty":
+                    return Resp([Use([])])
+                return Resp([Use(["not-a-shown-claim"])])
+        t3 = ap10.PrepayTools(s, o, prior, rule, floor=0.0, cap=3)
+        f = Fake("empty")
+        dec = ap10.llm_agent(t3, cap_usd=1000.0, client=f)             # every call costs $0.10 at Haiku prices; the model pends nothing
+        assert dec == [] and f.calls == t3.consulted_days and t3.consulted_days > 10
+        t4 = ap10.PrepayTools(s, o, prior, rule, floor=0.0, cap=3)
+        f = Fake("none")
+        dec = ap10.llm_agent(t4, cap_usd=1000.0, client=f)             # no tool call: the advice is followed
+        assert {(d.claim_id, d.paid_cpt) for d in dec} == {(d.claim_id, d.paid_cpt) for d in flow}
+        t5 = ap10.PrepayTools(s, o, prior, rule, floor=0.0, cap=3)
+        f = Fake("none")
+        dec = ap10.llm_agent(t5, cap_usd=0.25, client=f)               # $0.10 a call: three calls reach the cap, the rest follow the advice
+        assert f.calls == 3 and t5.spent_usd >= 0.25 and {(d.claim_id, d.paid_cpt) for d in dec} == {(d.claim_id, d.paid_cpt) for d in flow}
     print("ok test_ap10")
 
 

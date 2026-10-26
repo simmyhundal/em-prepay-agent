@@ -6,7 +6,8 @@ office's answers, with the level the rules would pay; `pay` closes a claim as bi
 A claim the agent never touches is paid as billed, as in the workflow. A pended claim the agent does not adjust is resolved by the rules (src/prepay_env.resolve_pend).
 
 Two drivers share the tools: `scripted_agent` follows the advice exactly (used for parity on development seeds, free) and `llm_agent` (a model call per decision turn;
-needs ANTHROPIC_API_KEY and an approved cap; never run without Simmy's OK). Nothing here reads the answer key.
+needs ANTHROPIC_API_KEY and an approved cap; never run without Simmy's OK). The model driver makes one call per consulted day, with one tool (`pend`, all claims in one call);
+`provider_history`, `adjust` and the per-claim `read_chart` turns of the first design were dropped to fit a $1 budget (docs/ap10.md): the charts are read for every pended claim and the rules decide. Nothing here reads the answer key.
 """
 import json
 import os
@@ -16,7 +17,7 @@ from wp10 import claim_features, days_index, CAP_PER_DAY
 
 CANDIDATES = 15
 MAX_TOOL_CALLS_PER_DAY = 30
-PRICES = {"claude-opus-5-5": (4.00, 20.00), "claude-sonnet-5-5": (2.00, 10.00), "claude-haiku-5-5": (1.00, 5.00)}   # $ per million tokens, input and output (list prices, estimates)
+PRICES = {"claude-opus-5-5": (4.00, 20.00), "claude-sonnet-5-5": (2.00, 10.00), "claude-haiku-5-5": (0.10, 0.50)}   # $ per million tokens, input and output (list prices up to 100K-token prompts)
 FLOOR = 0.0
 
 
@@ -107,65 +108,63 @@ def scripted_agent(tools):
     return tools.decisions()
 
 
-TOOL_SPECS = [
-    {"name": "provider_history", "description": "Earlier claims of the claim's clinician: counts by billed level and earlier claims on the same service date.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}}, "required": ["claim_id"]}},
-    {"name": "pend", "description": "Request the medical record for one or more claims (costs staff time; a wrongful pend burdens an honest provider). Within the daily cap; pass every claim you want pended in one call.", "input_schema": {"type": "object", "properties": {"claim_ids": {"type": "array", "items": {"type": "string"}}}, "required": ["claim_ids"]}},
-    {"name": "read_chart", "description": "Read the office's answer for pended claims and the level the rules would pay; pass all of them in one call.", "input_schema": {"type": "object", "properties": {"claim_ids": {"type": "array", "items": {"type": "string"}}}, "required": ["claim_ids"]}},
-    {"name": "adjust", "description": "Pay a pended claim at a level (99211 to 99215) or 'deny' instead of the rule's level.", "input_schema": {"type": "object", "properties": {"claim_id": {"type": "string"}, "level": {"type": "string"}}, "required": ["claim_id", "level"]}},
-    {"name": "done", "description": "Finish the day. Claims not pended are paid as billed.", "input_schema": {"type": "object", "properties": {}}},
-]
+PEND_TOOL = {"name": "pend", "description": "Request the medical record for the listed claims, and no others. Call it exactly once per day with every claim you choose to pend (an empty list pends nothing).",
+             "input_schema": {"type": "object", "properties": {"claim_ids": {"type": "array", "items": {"type": "string"}}}, "required": ["claim_ids"]}}
 
-SYSTEM = ("You review one day of incoming E/M claims for a payer before payment. For each candidate claim you may request records (pend) or let it pay as billed. "
-          "A pend costs about $21 of staff time and, if the claim was fine, about $44 of provider burden; a prevented overpayment is worth the dollars not paid. "
-          "The workflow's advice and its dollar estimate come with each claim: follow the advice unless the claim's history gives a concrete reason not to. "
-          "Never pend more than the daily cap. Call done when finished.")
+SYSTEM = ("You review one day of incoming E/M claims for a payer before payment. Each candidate carries a workflow dollar estimate of what pending it is worth and the workflow's advice, PEND or PAY. "
+          "A pend costs about $21 of staff time plus about $44 of provider burden if the claim was fine; a prevented overpayment is the dollars not paid. Records are requested only for claims you list. "
+          "Follow the advice unless the numbers on the claim give a concrete reason not to. Never list more claims than the daily cap. Call the pend tool exactly once.")
+MODEL = "claude-haiku-5-5"
+SHOWN_NEAR_MISSES = 3
 
 
-def llm_agent(tools, model="claude-sonnet-5-5", cap_usd=0.0, log_path=None, max_days=None):
-    """The model-driven driver. PAID. Refuses to start without a positive cap and an API key; stops cleanly when the running cost reaches the cap."""
-    if cap_usd <= 0 or not os.environ.get("ANTHROPIC_API_KEY"):
+def day_prompt(day):
+    """The compact view the model sees: the advised pends plus the best few near-misses, one line each."""
+    rows = [c for c in day["candidates"] if c["advice"] == "PEND"]
+    rows += [c for c in day["candidates"] if c["advice"] != "PEND"][:SHOWN_NEAR_MISSES]
+    lines = [f'{c["claim_id"]} clinician={c["clinician"]} billed={c["billed"]} paid=${c["paid"]:.0f} test_line={int(c["has_test_line"])} est=${c["workflow_score_dollars"]} advice={c["advice"]}' for c in rows]
+    return f'Receipt date {day["receipt_date"]}; {day["claims_received"]} claims received; pend cap {day["pend_cap"]}.\n' + "\n".join(lines), {c["claim_id"] for c in rows}
+
+
+def llm_agent(tools, model=MODEL, cap_usd=0.0, log_path=None, max_days=None, client=None):
+    """The model-driven driver. PAID. One model call per consulted day (a day where the workflow advises at least one pend), a forced-free tool call (`tool_choice` auto, one tool).
+    Refuses to start without a positive cap and an API key. Stops calling the model when the running cost reaches `cap_usd`; every later day follows the workflow's advice, and the log
+    says how many days were consulted. A reply with no usable tool call also falls back to the advice. Returns the Decisions."""
+    if cap_usd <= 0 or (client is None and not os.environ.get("ANTHROPIC_API_KEY")):
         raise RuntimeError("llm_agent needs a positive cap_usd and ANTHROPIC_API_KEY (Simmy's approval required before any paid run)")
-    import anthropic
-    client = anthropic.Anthropic()
+    if client is None:
+        import anthropic
+        client = anthropic.Anthropic()
     pin, pout = PRICES[model]
-    spent, log = 0.0, []
+    spent, log, consulted, fallbacks = 0.0, [], 0, 0
     for k in range(len(tools.days) if max_days is None else max_days):
         day = tools.next_day(k)
-        if not any(c["advice"] == "PEND" for c in day["candidates"]):
-            continue                                              # the workflow would pend nothing today: everything pays as billed, no model call
-        msgs = [{"role": "user", "content": json.dumps(day)}]
-        pends = 0
-        for _ in range(MAX_TOOL_CALLS_PER_DAY):
-            resp = client.messages.create(model=model, max_tokens=800, system=[{"type": "text", "text": SYSTEM, "cache_control": {"type": "ephemeral"}}], tools=TOOL_SPECS, messages=msgs)
-            spent += (resp.usage.input_tokens * pin + resp.usage.output_tokens * pout) / 1e6
-            log.append({"day": k, "in": resp.usage.input_tokens, "out": resp.usage.output_tokens, "spent": round(spent, 4)})
-            if spent >= cap_usd:
-                break
-            uses = [b for b in resp.content if b.type == "tool_use"]
-            if not uses:
-                break
-            msgs.append({"role": "assistant", "content": resp.content})
-            results, finished = [], False
-            for u in uses:
-                a = u.input
-                if u.name == "done":
-                    finished = True
-                    out = {"ok": True}
-                elif u.name == "pend":
-                    out = {}
-                    for cid in a["claim_ids"]:
-                        out[cid] = tools.pend(cid, pends)
-                        pends += "error" not in out[cid]
-                elif u.name == "read_chart":
-                    out = {cid: tools.read_chart(cid) for cid in a["claim_ids"]}
-                else:
-                    out = getattr(tools, u.name)(**a)
-                results.append({"type": "tool_result", "tool_use_id": u.id, "content": json.dumps(out)})
-            msgs.append({"role": "user", "content": results})
-            if finished:
-                break
+        advised = [c["claim_id"] for c in day["candidates"] if c["advice"] == "PEND"]
+        if not advised:
+            continue
         if spent >= cap_usd:
-            break
+            chosen = advised                                       # cap reached: follow the advice
+            fallbacks += 1
+        else:
+            text, shown = day_prompt(day)
+            resp = client.messages.create(model=model, max_tokens=1200, system=SYSTEM, tools=[PEND_TOOL], messages=[{"role": "user", "content": text}],
+                                          output_config={"effort": "low"})
+            cost = (resp.usage.input_tokens * pin + resp.usage.output_tokens * pout) / 1e6
+            spent += cost
+            consulted += 1
+            use = next((b for b in resp.content if b.type == "tool_use" and b.name == "pend"), None)
+            ids = [i for i in (use.input.get("claim_ids", []) if use else []) if i in shown]
+            chosen = ids if use else advised
+            if not use:
+                fallbacks += 1
+            log.append({"day": k, "in": resp.usage.input_tokens, "out": resp.usage.output_tokens, "usd": round(cost, 6), "advised": len(advised), "chose": len(chosen),
+                        "agreed": set(chosen) == set(advised)})
+        n = 0
+        for cid in chosen:
+            if "error" not in tools.pend(cid, n):
+                n += 1
+                tools.read_chart(cid)
     if log_path:
-        json.dump({"model": model, "spent_usd": round(spent, 4), "turns": log}, open(log_path, "w"))
+        json.dump({"model": model, "spent_usd": round(spent, 6), "consulted_days": consulted, "advice_fallback_days": fallbacks, "turns": log}, open(log_path, "w"))
+    tools.spent_usd, tools.consulted_days, tools.fallback_days = spent, consulted, fallbacks
     return tools.decisions()
