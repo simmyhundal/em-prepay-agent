@@ -31,3 +31,15 @@ The open questions for the customer are in the discovery note. The ones that cha
 
 ## Not in release P1
 Provider-level prepay status (point 5), providers that change behaviour after being pended, commercial contract variation, real payer data, any letter or notice text.
+
+## Learnings carried over from the postpay repository (2026-10-25)
+What the postpay release 4.2 and 5.2 taught that applies here; each is a design rule for the next prepay version, not a result.
+1. **A signal separable by construction proves little.** The postpay volume lane reached 60% of its oracle on a signal the generator made perfectly clean (busiest honest day 26 visits, least busy impossible-days provider 33). Prepay's claim edit on visits per day (`src/edit_rules.py`, `daily_max`) is the same kind of rule; before trusting a prepay result on it, test it on data where honest and suspicious volume overlap (postpay issue 197) and report how many honest claims it pends.
+2. **Count records not provided, and sample inside a stratum.** A pended claim the office has no record of is an overpayment prevented, not an unknown; where a signal defines a slice of claims, sample inside that slice and extrapolate to it only (`recovery_stratified` in the postpay repository).
+3. **Weight abrasion by the provider's total true rate**, including claims for visits that never happened, so a provider whose only fault is phantom visits is not treated as honest.
+4. **Share code between the workflow and the agent** (the postpay lane is one module both call), so tool parity cannot drift; call the scripted check "tool and workflow parity", since it tests the tools and not the model.
+5. **Stress-test the oracle** (`eval/prepay_oracle.py`): print its breakdown, use 20 or more samples, let it pursue any claim that pays, and charge it every cost an arm pays. A first postpay oracle was far too low (82% of it reached, 60% on the rebuilt one).
+6. **People sit at both ends.** Prepay's pend-and-release has a person at the release step; the postpay evaluation modes (stage and human-gate parameters, issue 207 there) map to it: screen only, records only, full run, and a gate that vetoes a fraction of pends or delays release.
+7. **Keep the one-seed-carries-the-mean discipline**: report the median and the count of seeds above zero before the mean.
+8. **Say what each README number is made of** (unit, version, the assumption that moves it most), and keep one yardstick per table.
+

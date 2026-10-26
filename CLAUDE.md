@@ -23,11 +23,18 @@ Overpayment prevented minus staff cost minus abrasion. Abrasion = wrongful pends
 - **No letters or findings are generated** (no denial or demand letters); a pend notice text is out of scope until legal review.
 - README is a short front door, 7,000 characters at most (a test enforces it once the README sync test is adapted); put detail in `docs/`.
 
+## Where things live (one fact, one home)
+- `README.md`: the front door (a test enforces its length); a table in it uses one score for every row.
+- `docs/process.md`: how a release is run. `docs/decision_log.md`: events as they happen. `docs/seeds.md` (generated): seed pools. `docs/versioning.md`: the versions.
+- `docs/prepay_plan.md`, `docs/score_prepay.md`: the plan and the score. `docs/wp*.md`, `docs/ap*.md`: the workflow and agent versions (loop, freeze, confirm, final development run).
+- `docs/concepts/` and `docs/glossary.md`: one page per project term; every README table column has a glossary row.
+
 ## Domain facts
 E/M level (99212 to 99215) comes from medical decision making or total time. A pended claim waits on the provider's records; prompt-pay clocks vary by state and contract (parameters, not facts). Medicare ADR (45 days, signature rules) is the postpay analogue; commercial clocks are to be sourced.
 
 ## Commands
 ```bash
+sh tests/run_fast.sh                    # before every merge
 tools/get_generator.sh                  # fetch the pinned generators into external/
 for t in tests/test_*.py; do python3 $t >/dev/null 2>&1 && echo ok $t || echo FAIL $t; done
 ```
