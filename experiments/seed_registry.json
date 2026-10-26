@@ -434,18 +434,17 @@
     6780
    ],
    "kind": "test",
-   "status": "fresh",
-   "status_date": "2026-10-23",
-   "status_note": "prepay test pool for release P1: seeds 6001 + 41j, j = 0 to 19; never built before the freeze",
+   "status": "burned",
+   "status_date": "2026-10-26",
+   "status_note": "prepay test pool for release P1: seeds 6001 + 41j, j = 0 to 19; j = 0 to 9 (6001 to 6370) read once on 2026-10-25 for the true test of WP1.1 and AP1.0 (docs/p1_test.md) and now burned; j = 10 to 19 never built",
    "uses": [
     {
      "arm": "WP1.1-test",
      "role": "test",
-     "date": "2026-10-23",
-     "reference": "docs/ap10.md",
-     "note": "frozen WP1.1, the free workflow side of the true test, run with the agent in step 6 (not run)",
+     "date": "2026-10-25",
+     "reference": "docs/p1_test.md",
+     "note": "the frozen workflow's first test, with the agent run on the same seeds",
      "second_use": false,
-     "done": false,
      "seeds": [
       6001,
       6042,
@@ -462,11 +461,30 @@
     {
      "arm": "AP1.0",
      "role": "test",
-     "date": "2026-10-23",
-     "reference": "docs/ap10.md",
-     "note": "the paid agent run, once, on the same seeds (not run; needs approval, a cap and a key)",
+     "date": "2026-10-25",
+     "reference": "docs/p1_test.md",
+     "note": "the agent (Haiku 5.5), once; spent $0.2996 of a $1.00 cap",
      "second_use": false,
-     "done": false,
+     "seeds": [
+      6001,
+      6042,
+      6083,
+      6124,
+      6165,
+      6206,
+      6247,
+      6288,
+      6329,
+      6370
+     ]
+    },
+    {
+     "arm": "WP1.0",
+     "role": "test",
+     "date": "2026-10-25",
+     "reference": "docs/p1_test.md",
+     "note": "the previous workflow re-run on the test seeds as a comparison (no tuning on them)",
+     "second_use": false,
      "seeds": [
       6001,
       6042,

@@ -4,7 +4,7 @@ import re
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CONCEPTS = os.path.join(ROOT, "docs", "concepts")
-OUTSIDE_PAGES = ["docs/concepts/README.md"]          # add each new or changed page here (docs/process.md, Writing for outside readers)
+OUTSIDE_PAGES = ["docs/concepts/README.md", "docs/p1_test.md", "docs/releases/P1.md", "docs/reflection_P1.md"]          # add each new or changed page here (docs/process.md, Writing for outside readers)
 OLD = []                                              # retired names that may not appear outside code spans: add as terms are renamed
 
 
